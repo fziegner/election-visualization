@@ -3,17 +3,23 @@ Routes and views for the flask application.
 """
 
 from datetime import datetime
+import json
+
 from flask import render_template
+
 from wcm_wahlergebnisse import app
 
 @app.route('/')
 @app.route('/home')
 def home():
     """Renders the home page."""
+    with open("wcm_wahlergebnisse/wahlkreise.geojson", "r") as fp:
+        data = json.load(fp)
     return render_template(
         'index.html',
-        title='Home Page',
+        title='election_viz',
         year=datetime.now().year,
+        wahlkreise=data
     )
 
 @app.route('/contact')
@@ -23,7 +29,7 @@ def contact():
         'contact.html',
         title='Contact',
         year=datetime.now().year,
-        message='Your contact page.'
+        message='feel free to contact anyone of the developers for questions.'
     )
 
 @app.route('/about')
