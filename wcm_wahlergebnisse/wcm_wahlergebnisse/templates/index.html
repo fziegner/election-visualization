@@ -1,3 +1,4 @@
+<link rel="stylesheet" type="text/css" href="/static/content/style.css" />
 {% extends "layout.html" %}
 
 {% block content %}
@@ -6,8 +7,20 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
+    // just to prove the concept of putting different colors into the map
+    function getRandomColor() {
+        let letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
     //set up the map
     let mapGermany = L.map("map_germany").setView([50.9, 10.3], 7);
+    let geoJson;
+    let info = L.control();
 
     //tile layer
     L.tileLayer("https://b.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -15,9 +28,80 @@ $(document).ready(function(){
 
     }).addTo(mapGermany);
 
+    //geojson passed from the server
     let wahlkreise = {{ wahlkreise|tojson }};
-    console.log(wahlkreise);
-    L.geoJSON(wahlkreise).addTo(mapGermany);
+
+    // custom style of each feature (i.e. each wahlkreis)
+    function style(feature){
+        return {
+            fillColor: getRandomColor(),
+            weight: 1,
+            opacity: 1,
+            color: 'black',
+            dashArray: '3',
+            fillOpacity: 0.5
+        }
+    }
+
+    //style change on mouseover
+    function hightlightOnMouseOver(e){
+        let layer = e.target;
+        layer.setStyle({
+            weight: 5,
+            color: 'white',
+            dashArray: '',
+            fillOpacity: 0.5
+        });
+
+        layer.bringToFront();
+
+        info.update(layer.feature.properties);
+    }
+
+    //style reset on mouseout
+    function resetHighlight(e){
+        geoJson.resetStyle(e.target);
+        info.update(null);
+    }
+
+    //on click jump to the state
+    function zoomToState(e) {
+        mapGermany.fitBounds(e.target.getBounds());
+    }
+
+    //assign listeners
+    function onEachFeature(feature, layer){
+        layer.on({
+            mouseover: hightlightOnMouseOver,
+            mouseout: resetHighlight,
+            click: zoomToState
+        });
+    }
+
+    geoJson = L.geoJSON(wahlkreise, {
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(mapGermany);
+
+
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info');
+        this.update();
+        return this._div;
+    };
+
+    // update info window with the data of the hovered state
+    info.update = function (properties) {
+        this._div.innerHTML = '<h4>Wahlergebnisse</h4>' +  (properties ?
+            '<b>' + properties.WKR_NAME + ', ' + properties.LAND_NAME + '</b><br />CDU : x% <br /> SPD : y% <br /> Grüne : z%'
+            : 'Hover over a state');
+    };
+
+    info.addTo(mapGermany);
+
+
+
 });
 
 </script>
