@@ -19,7 +19,7 @@ dict = {"01":"Schleswig-Holstein",
         "05":"Nordrhein-Westfalen",
         "06":"Hessen",
         "07":"Rheinland-Pfalz",
-        "08":"Baden-Wuerttemberg",
+        "08":"Baden-Württemberg",
         "09":"Bayern",
         "10":"Saarland",
         "11":"Berlin",
@@ -27,11 +27,11 @@ dict = {"01":"Schleswig-Holstein",
         "13":"Mecklenburg-Vorpommern",
         "14":"Sachsen",
         "15":"Sachsen-Anhalt",
-        "16":"Thueringen"}
+        "16":"Thüringen"}
 
 df = pd.DataFrame(conv)
 
-with open("results.json", mode='w') as feedsjson:
+with open("results.json", mode='w', encoding="utf-8") as feedsjson:
     list = []
     for index, row in df.iterrows():
         land_id = row[1][0:2]
