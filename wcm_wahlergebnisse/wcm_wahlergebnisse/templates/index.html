@@ -121,6 +121,14 @@ $(document).ready(function(){
 
     info.addTo(mapGermany);
 
+    var electionTypeSelector = L.control({position: 'bottomleft'});
+    electionTypeSelector.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'election selector');
+        div.innerHTML = '<select><option>Europawahlen</option><option>Bundestagswahlen</option><option>Landtagswahlen</option><option>Kommunalwahlen</option></select>';
+        div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
+        return div;
+    };
+    electionTypeSelector.addTo(mapGermany);
 
 
 });
