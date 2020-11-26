@@ -32,15 +32,36 @@ $(document).ready(function(){
     let wahlkreise = {{ wahlkreise|tojson }};
 
     // custom style of each feature (i.e. each wahlkreis)
-    function style(feature){
-        return {
-            fillColor: getRandomColor(),
-            weight: 1,
-            opacity: 1,
-            color: 'black',
-            dashArray: '3',
-            fillOpacity: 0.5
-        }
+    function style(feature) {
+      /*
+      let votes_map = new Map([
+        ["cdu", feature.properties.CDU],
+        ["spd", feature.properties.SPD],
+        ["gruene", feature.properties.GRUENE],
+        ["afd", feature.properties.AFD],
+        ["linke", feature.properties.LINKE],
+        ["fdp", feature.properties.FDP],
+        ["misc", feature.properties.MISC],
+      ]);
+      winning_party = [...votes_map.entries()].reduce((a, e) => e[1] > a[1] ? e : a);
+      let color_map = new Map([
+        ["cdu", "#000000"],
+        ["spd", "#E3000F"],
+        ["gruene", "#46962B"],
+        ["afd", "#009EE0"],
+        ["linke", "#BE3075"],
+        ["fdp", "#FFFF00"],
+        ["misc", "#808080"],
+      ]);
+      */
+      return {
+          fillColor: getRandomColor(), //color_map.get(winning_party[0]),
+          weight: 1,
+          opacity: 1,
+          color: 'black',
+          dashArray: '3',
+          fillOpacity: 0.5
+      }
     }
 
     //style change on mouseover
