@@ -7,15 +7,6 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
-    // just to prove the concept of putting different colors into the map
-    function getRandomColor() {
-        let letters = '0123456789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-    }
 
     //set up the map
     let mapGermany = L.map("map_germany").setView([50.9, 10.3], 7);
@@ -33,17 +24,17 @@ $(document).ready(function(){
 
     // custom style of each feature (i.e. each wahlkreis)
     function style(feature) {
-      /*
+
       let votes_map = new Map([
-        ["cdu", feature.properties.CDU],
-        ["spd", feature.properties.SPD],
-        ["gruene", feature.properties.GRUENE],
-        ["afd", feature.properties.AFD],
-        ["linke", feature.properties.LINKE],
-        ["fdp", feature.properties.FDP],
-        ["misc", feature.properties.MISC],
+        ["cdu", feature.properties.union],
+        ["spd", feature.properties.spd],
+        ["gruene", feature.properties.gruene],
+        ["afd", feature.properties.afd],
+        ["linke", feature.properties.linke],
+        ["fdp", feature.properties.fdp],
+        ["misc", feature.properties.misc],
       ]);
-      winning_party = [...votes_map.entries()].reduce((a, e) => e[1] > a[1] ? e : a);
+      let winning_party = [...votes_map.entries()].reduce((a, e) => parseInt(e[1]) > parseInt(a[1]) ? e : a);
       let color_map = new Map([
         ["cdu", "#000000"],
         ["spd", "#E3000F"],
@@ -53,9 +44,9 @@ $(document).ready(function(){
         ["fdp", "#FFFF00"],
         ["misc", "#808080"],
       ]);
-      */
+
       return {
-          fillColor: getRandomColor(), //color_map.get(winning_party[0]),
+          fillColor: color_map.get(winning_party[0]),
           weight: 1,
           opacity: 1,
           color: 'black',
@@ -114,8 +105,22 @@ $(document).ready(function(){
 
     // update info window with the data of the hovered state
     info.update = function (properties) {
+        let percentages = [];
+        if(properties) {
+            let votes = [properties.union, properties.spd, properties.gruene, properties.afd, properties.linke, properties.fdp, properties.misc].map(val => parseInt(val)); //parse strings to int
+            let numOr0 = n => isNaN(n) ? 0 : n
+            let sum = votes.reduce((a,b) => numOr0(a) + numOr0(b), 0); //calculate total amount of votes, use 0 in calculation if summand is not a number
+            percentages = votes.map(val => (val / sum * 100).toFixed(2)); //calculate percentage and trim to 2 decimal places
+        }
         this._div.innerHTML = '<h4>Wahlergebnisse</h4>' +  (properties ?
-            '<b>' + properties.WKR_NAME + ', ' + properties.LAND_NAME + '</b><br />CDU : x% <br /> SPD : y% <br /> Grüne : z%'
+            '<b>' + properties.WKR_NAME + ', ' + properties.LAND_NAME + '</b>' +
+            '<br />CDU : ' +  percentages[0] + '%' +
+            '<br /> SPD : '  + percentages[1] + '%' +
+            '<br /> Grüne : '  + percentages[2] + '%' +
+            '<br /> AFD : '  + percentages[3] + '%' +
+            '<br /> LINKE : '  + percentages[4] + '%' +
+            '<br /> FDP : '  + percentages[5] + '%' +
+            '<br /> Sonstige : '  + percentages[6] + '%'
             : 'Hover over a state');
     };
 
@@ -124,7 +129,7 @@ $(document).ready(function(){
     var electionTypeSelector = L.control({position: 'bottomleft'});
     electionTypeSelector.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'election selector');
-        div.innerHTML = '<select><option>Europawahlen</option><option>Bundestagswahlen</option><option>Landtagswahlen</option><option>Kommunalwahlen</option></select>';
+        div.innerHTML = '<select><option selected>Bundestagswahlen</option><option>Europawahlen</option><option>Landtagswahlen</option><option>Kommunalwahlen</option></select>';
         div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
         return div;
     };

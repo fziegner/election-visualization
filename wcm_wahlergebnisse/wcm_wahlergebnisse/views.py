@@ -13,7 +13,7 @@ from wcm_wahlergebnisse import app
 @app.route('/home')
 def home():
     """Renders the home page."""
-    with open("wcm_wahlergebnisse/wahlkreise.geojson", "r") as fp:
+    with open("wcm_wahlergebnisse/wahlkreise_results_2018.geojson", "r") as fp:
         data = json.load(fp)
     return render_template(
         'index.html',
