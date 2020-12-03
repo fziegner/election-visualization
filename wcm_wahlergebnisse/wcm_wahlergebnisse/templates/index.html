@@ -25,34 +25,59 @@ $(document).ready(function(){
     // custom style of each feature (i.e. each wahlkreis)
     function style(feature) {
 
-      let votes_map = new Map([
-        ["cdu", feature.properties.union],
-        ["spd", feature.properties.spd],
-        ["gruene", feature.properties.gruene],
-        ["afd", feature.properties.afd],
-        ["linke", feature.properties.linke],
-        ["fdp", feature.properties.fdp],
-        ["misc", feature.properties.misc],
-      ]);
-      let winning_party = [...votes_map.entries()].reduce((a, e) => parseInt(e[1]) > parseInt(a[1]) ? e : a);
-      let color_map = new Map([
-        ["cdu", "#000000"],
-        ["spd", "#E3000F"],
-        ["gruene", "#46962B"],
-        ["afd", "#009EE0"],
-        ["linke", "#BE3075"],
-        ["fdp", "#FFFF00"],
-        ["misc", "#808080"],
-      ]);
+        let votes_map = new Map([
+            ["cdu", feature.properties.union],
+            ["spd", feature.properties.spd],
+            ["gruene", feature.properties.gruene],
+            ["afd", feature.properties.afd],
+            ["linke", feature.properties.linke],
+            ["fdp", feature.properties.fdp],
+            ["misc", feature.properties.misc],
+        ]);
+        let winning_party = [...votes_map.entries()].reduce((a, e) => parseInt(e[1]) > parseInt(a[1]) ? e : a);
+        let color_map = new Map([
+            ["cdu", "#000000"],
+            ["spd", "#E3000F"],
+            ["gruene", "#46962B"],
+            ["afd", "#009EE0"],
+            ["linke", "#BE3075"],
+            ["fdp", "#FFFF00"],
+            ["misc", "#808080"],
+        ]);
 
-      return {
-          fillColor: color_map.get(winning_party[0]),
-          weight: 1,
-          opacity: 1,
-          color: 'black',
-          dashArray: '3',
-          fillOpacity: 0.5
-      }
+        //calculate percentages
+        let numOr0 = n => isNaN(n) ? 0 : n
+        let votes = [...votes_map.values()].map(val => parseInt(val));
+        let sum = votes.reduce((a,b) => numOr0(a) + numOr0(b), 0); //calculate total amount of votes, use 0 in calculation if summand is not a number
+        let percentages = votes.map(val => parseFloat((val / sum * 100).toFixed(2))); //calculate percentage and trim to 2 decimal places
+        let percentages_map = new Map([
+            ["cdu", percentages[0]],
+            ["spd", percentages[1]],
+            ["gruene", percentages[2]],
+            ["afd", percentages[3]],
+            ["linke", percentages[4]],
+            ["fdp", percentages[5]],
+            ["misc", percentages[6]],
+        ]);
+
+        //calculate opacity based on majority
+        function dynamicOpacity(percentage){
+            if(percentage >= 50){
+                return 1; //absolute majority --> full opacity
+            }
+            else{
+                return percentage * 2 / 100; // less than absolute --> maps 50% too 100% opacity and then lowers according to value
+            }
+        }
+
+        return {
+            fillColor: color_map.get(winning_party[0]),
+            weight: 1,
+            opacity: 1,
+            color: 'grey',
+            dashArray: '3',
+            fillOpacity: dynamicOpacity(percentages_map.get(winning_party[0]))
+        }
     }
 
     //style change on mouseover
@@ -62,7 +87,6 @@ $(document).ready(function(){
             weight: 5,
             color: 'white',
             dashArray: '',
-            fillOpacity: 0.5
         });
 
         layer.bringToFront();
@@ -96,7 +120,6 @@ $(document).ready(function(){
     }).addTo(mapGermany);
 
 
-
     info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'info');
         this.update();
@@ -114,7 +137,7 @@ $(document).ready(function(){
         }
         this._div.innerHTML = '<h4>Wahlergebnisse</h4>' +  (properties ?
             '<b>' + properties.WKR_NAME + ', ' + properties.LAND_NAME + '</b>' +
-            '<br />CDU : ' +  percentages[0] + '%' +
+            '<br /> CDU/CSU : ' +  percentages[0] + '%' +
             '<br /> SPD : '  + percentages[1] + '%' +
             '<br /> Grüne : '  + percentages[2] + '%' +
             '<br /> AFD : '  + percentages[3] + '%' +
