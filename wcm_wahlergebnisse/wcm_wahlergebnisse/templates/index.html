@@ -1,12 +1,119 @@
-<link rel="stylesheet" type="text/css" href="/static/content/style.css" />
 {% extends "layout.html" %}
 
 {% block content %}
 
 <div id="map_germany"></div>
 
+ <div class="card-group" id="buildbox">
+    <div class="row" id="sortable">
+        <div class="card border-primary">
+            <div class="card-body">
+                <label for="election_select">Select Election Type:</label>
+                <select class="custom-select" id="election_select_1">
+                    <option selected value="bund">Bundestagswahl</option>
+                    <option value="europa">Europawahl</option>
+                    <option value="land">Landtagswahl</option>
+                    <option value="kommune">Kommunalwahl</option>
+                </select>
+                <br/>
+                <label for="year_select">Select Year</label>
+                <select class="custom-select" id="year_select_1">
+                    <option selected value="2018">2018</option>
+                    <option value="2014">2014</option>
+                    <option value="2010">2010</option>
+                </select>
+                <br />
+                <div onclick="renderImmediate(this)" class="btn btn-primary float-right">Show immediate</div>
+            </div>
+        </div>
+        <div class="card border-primary">
+            <div class="card-body">
+                <label for="election_select">Select Election Type:</label>
+                <select class="custom-select" id="election_select_2">
+                    <option selected value="bund">Bundestagswahl</option>
+                    <option value="europa">Europawahl</option>
+                    <option value="land">Landtagswahl</option>
+                    <option value="kommune">Kommunalwahl</option>
+                </select>
+                <br/>
+                <label for="year_select">Select Year</label>
+                <select class="custom-select" id="year_select_2">
+                    <option selected value="2018">2018</option>
+                    <option value="2014">2014</option>
+                    <option value="2010">2010</option>
+                </select>
+                <br />
+                <div onclick="renderImmediate(this)" class="btn btn-primary float-right">Show immediate</div>
+            </div>
+        </div>
+        <div class="card border-primary">
+            <div class="card-body">
+                <label for="election_select">Select Election Type:</label>
+                <select class="custom-select" id="election_select_3">
+                    <option selected value="bund">Bundestagswahl</option>
+                    <option value="europa">Europawahl</option>
+                    <option value="land">Landtagswahl</option>
+                    <option value="kommune">Kommunalwahl</option>
+                </select>
+                <br/>
+                <label for="year_select">Select Year</label>
+                <select class="custom-select" id="year_select_3">
+                    <option selected value="2018">2018</option>
+                    <option value="2014">2014</option>
+                    <option value="2010">2010</option>
+                </select>
+                <br />
+                <div onclick="renderImmediate(this)" class="btn btn-primary float-right">Show immediate</div>
+            </div>
+        </div>
+    </div>
+ </div>
+
+<div class="btn btn-primary" id="btn_add_card" onclick="addCard();">Add Card</div>
+<div class="btn btn-primary" id="btn_render">Render</div>
+
+
+<script id="addCard" type="text/html">
+    <div class="card border-primary">
+        <div class="card-body">
+            <label for="election_select">Select Election Type:</label>
+            <select class="custom-select" id="election_select_{{ num }}">
+                <option selected value="bund">Bundestagswahl</option>
+                <option value="europa">Europawahl</option>
+                <option value="land">Landtagswahl</option>
+                <option value="kommune">Kommunalwahl</option>
+            </select>
+            <br/>
+            <label for="year_select">Select Year</label>
+            <select class="custom-select" id="year_select_{{ num }}">
+                <option selected value="2018">2018</option>
+                <option value="2014">2014</option>
+                <option value="2010">2010</option>
+            </select>
+            <br />
+            <div onclick="renderImmediate(this)" class="btn btn-primary float-right">Show Immediate</div>  <!-- TODO renderImmediate function-->
+        </div>
+    </div>
+</script>
+
 <script type="text/javascript">
+
+function addCard(){
+        let group = $("#sortable");
+        let highestNum = group.children().length;
+        console.log(highestNum);
+
+        group.append(Mustache.render(document.getElementById("addCard").innerHTML, highestNum + 1));
+}
+
+function renderImmediate(param) {
+
+}
+
 $(document).ready(function(){
+
+    $("#sortable").sortable();
+    $("#sortable").disableSelection();
 
     //set up the map
     let mapGermany = L.map("map_germany").setView([50.9, 10.3], 7);
@@ -158,6 +265,15 @@ $(document).ready(function(){
     };
     electionTypeSelector.addTo(mapGermany);
 
+    var prevNext = L.control({position: "bottomright"});
+    prevNext.onAdd = function(map){
+        let div = L.DomUtil.create("div", "prevNext");
+        div.innerHTML = '<div class="btn btn-primary" onclick="renderPrev()">Previous</div><div class="btn btn-primary" onclick="renderNext()">Next</div>'
+        return div;
+    }
+    prevNext.addTo(mapGermany);
+
+    // TODO also create another info (maybe top left in map) which election type and which year is currently rendered
 
 });
 
