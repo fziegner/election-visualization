@@ -1,0 +1,12 @@
+btw17	-	2017GeometrieWahlkreise19DBT5 	-	Combined/btw2017_results.geojson	DONE: Set Missing Values to 0
+btw13	-	2013GeometrieWahlkreise18DBT4 	-	Combined/btw2013_results.geojson	DONE: Set Missing Values to 0
+btw09	-	2009GeometrieWahlkreise17DBT3 	-	Combined/btw2009_results.geojson	DONE: Set Missing Values to 0
+btw05	-	2005GeometrieWahlkreise16DBT2	-	Combined/btw2005_results.geojson	DONE: Set Missing Values to 0
+btw02	-	2002GeometrieWahlkreise15DBT1	-	Combined/btw2002_results.geojson	Problems: Changed Format Many Missing Values
+btw98	-	1998GeometrieWahlkreise14DBT0	-	Combined/btw1998_results.geojson	Problems: Changed Format Many Missing Values
+
+ew19	-	2017GeometrieWahlkreise19DBT5?	-						Problems: Other format
+ew14	-	2013?
+ew09	-	2009?
+ew04	-	2002?
+ew99	-	1998?
