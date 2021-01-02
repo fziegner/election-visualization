@@ -98,6 +98,11 @@
 
 <script type="text/javascript">
 
+$("[id^=election_select]").change(function() {
+  id = "#" + "year_select_" + $(this).attr('id').slice(-1)
+  $(id).load("/static/data/" + $(this).val() + ".txt");
+});
+
 function addCard(){
         let group = $("#sortable");
         let highestNum = group.children().length;
