@@ -18,9 +18,12 @@
                 <br/>
                 <label for="year_select">Select Year</label>
                 <select class="custom-select" id="year_select_1">
-                    <option selected value="17">2017</option>
-                    <option value="13">2013</option>
+                    <option value="98">1998</option>
+                    <option value="02">2002</option>
+                    <option value="05">2005</option>
                     <option value="09">2009</option>
+                    <option value="13">2013</option>
+                    <option selected value="17">2017</option>
                 </select>
                 <br />
                 <div onclick="renderImmediate(this)" class="btn btn-primary float-right">Show immediate</div>
@@ -59,11 +62,6 @@
 </script>
 
 <script type="text/javascript">
-
-$("[id^=election_select]").change(function() {
-  id = "#" + "year_select_" + $(this).attr('id').slice(-1)
-  $(id).load("/static/data/" + $(this).val() + ".txt");
-});
 
 let mapGermany;  // the leaflet map
 let geoJson; //the currently rendered geoJson
@@ -251,6 +249,11 @@ function onEachFeature(feature, layer){
 }
 
 $(document).ready(function(){
+
+    $("[id^=election_select]").change(function() {
+        id = "#" + "year_select_" + $(this).attr('id').slice(-1)
+        $(id).load("/static/data/" + $(this).val() + ".txt");
+    });
 
     $("#sortable").sortable();
     $("#sortable").disableSelection();
