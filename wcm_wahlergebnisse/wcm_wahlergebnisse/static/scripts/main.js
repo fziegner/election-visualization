@@ -1,8 +1,7 @@
 let mapGermany;  // the leaflet map
 let geoJson; //the currently rendered geoJson
 let info;   //control widget that shows the data in detail
-let chosenInfo;
-// TODO also create another info (maybe top left in map) which election type and which year is currently rendered
+let chosenInfo; // control widget that shows which element from the buildbox is currently rendered on the map
 let electionTypeSelector; //probably obsolete because we choose the election type with the build box
 let prevNext; //control box to navigate through the buildbox on the map
 
@@ -12,9 +11,24 @@ let currentIndex = 0; //the index of the array above that is currently rendered 
 function addCard(){
         let group = $("#sortable");
         let highestNum = group.children().length;
-        console.log(highestNum);
+        let newNum = highestNum + 1;
 
-        group.append(Mustache.render(document.getElementById("addCard").innerHTML, {num: highestNum + 1}));
+        group.append(Mustache.render(document.getElementById("addCard").innerHTML, {num: newNum}));
+        $("#election_select_" + newNum).trigger("change");
+}
+
+function changeDrowdown(elem){
+    let num = elem.id.replace("election_select_", "");
+    $("#year_select_" + num).html($("#year_select_" + num).find("option").each(function(){
+        if($(this).attr("election_type") != elem.value){
+            $(this).attr("hidden", true);
+            $(this).attr("disabled", true);
+        }
+        else{
+            $(this).attr("hidden", false);
+            $(this).attr("disabled", false);
+        }
+    }));
 }
 
 function saveAndRender(){

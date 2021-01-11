@@ -19,7 +19,7 @@
     <div class="card border-primary">
         <div class="card-body">
             <label for="election_select">Select Election Type:</label>
-            <select class="custom-select" id="election_select_{{num}}">
+            <select class="custom-select" id="election_select_{{num}}" onchange="changeDrowdown(this)">
                 <option selected value="btw">Bundestagswahl</option>
                 <option value="ew">Europawahl</option>
                 <option value="ltw">Landtagswahl</option>
