@@ -1,2 +1,2 @@
-<option>2100</option>
-<option>2104</option>
+<option election_type="ltw" value="2010">2010</option>
+<option election_type="ltw" value="2014">2014</option>

@@ -1,4 +1,4 @@
-<option>2004</option>
-<option>2009</option>
-<option>2014</option>
-<option>2019</option>
+<option election_type="ew" value="2004">2004</option>
+<option election_type="ew" value="2009">2009</option>
+<option election_type="ew" value="2014">2014</option>
+<option election_type="ew" value="2019">2019</option>

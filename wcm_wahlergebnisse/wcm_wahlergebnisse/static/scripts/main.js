@@ -1,0 +1,303 @@
+let mapGermany;  // the leaflet map
+let geoJson; //the currently rendered geoJson
+let info;   //control widget that shows the data in detail
+let chosenInfo;
+// TODO also create another info (maybe top left in map) which election type and which year is currently rendered
+let electionTypeSelector; //probably obsolete because we choose the election type with the build box
+let prevNext; //control box to navigate through the buildbox on the map
+
+let buildboxChooses = []; //array holding all geojsons that are currently selected from the buildbox
+let currentIndex = 0; //the index of the array above that is currently rendered on the map
+
+function addCard(){
+        let group = $("#sortable");
+        let highestNum = group.children().length;
+        console.log(highestNum);
+
+        group.append(Mustache.render(document.getElementById("addCard").innerHTML, {num: highestNum + 1}));
+}
+
+function saveAndRender(){
+    buildboxChooses = [] //empty and refill
+    let group = $("#sortable");
+    let highestNum = group.children().length;
+    for(let i = 1; i <= highestNum; i++){
+        let type = $("#election_select_" + i).val();
+        let year = $("#year_select_" + i).val();
+
+        $.ajax({
+            method: "get",
+            url: "/data?type=" + type + "&year=" + year,
+            async: false, //very important, need to wait for this ajax call to finish before continuing with the function execution
+            success: function(data){
+                buildboxChooses.push(data);
+            },
+            error: function(xhr, status, error){
+                console.log(status);
+                console.log(xhr);
+                console.log(error);
+            }
+        });
+    }
+
+    currentIndex = 0;
+    geoJson.removeFrom(mapGermany); //remove old geoJson
+    geoJson = L.geoJSON(buildboxChooses[currentIndex], {  //render the first item from the buildbox
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(mapGermany);
+
+    //this line is never reached, type error before, but it happens on line 270ish with the election info box (buildboxChooses[currentIndex] undefined)
+    chosenInfo.update();
+}
+
+function renderImmediate(type, year) {
+    for(let i = 0; i < buildboxChooses.length; i++){
+        if(buildboxChooses[i].parameters.election_type == type && buildboxChooses[i].parameters.election_year == year){
+            currentIndex = i;
+            geoJson.removeFrom(mapGermany); //remove old geoJson
+            geoJson = L.geoJSON(buildboxChooses[currentIndex], {  //render the next item from the buildbox
+                style: style,
+                onEachFeature: onEachFeature
+            }).addTo(mapGermany);
+
+            break;
+        }
+    }
+
+    chosenInfo.update()
+}
+
+function renderPrev(){
+    let group = $("#sortable");
+    let highestNum = group.children().length;
+
+    if(currentIndex == 0){ //need this case separately because otherwise modulo would get negative
+        currentIndex = highestNum - 1;
+    }
+    else {
+        currentIndex = (currentIndex - 1) % highestNum; //if we had the last and click next we want to start with the first one again
+    }
+
+    geoJson.removeFrom(mapGermany); //remove old geoJson
+    geoJson = L.geoJSON(buildboxChooses[currentIndex], {  //render the next item from the buildbox
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(mapGermany);
+
+    chosenInfo.update()
+}
+
+function renderNext(){
+    let group = $("#sortable");
+    let highestNum = group.children().length;
+
+    currentIndex = (currentIndex + 1) % highestNum; //if we had the last and click next we want to start with the first one again
+
+    geoJson.removeFrom(mapGermany); //remove old geoJson
+    geoJson = L.geoJSON(buildboxChooses[currentIndex], {  //render the next item from the buildbox
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(mapGermany);
+
+    chosenInfo.update();
+}
+
+// custom style of each feature (i.e. each wahlkreis)
+function style(feature) {
+
+    let votes_map = new Map([
+        ["cdu", feature.properties.union],
+        ["spd", feature.properties.spd],
+        ["gruene", feature.properties.gruene],
+        ["afd", feature.properties.afd],
+        ["linke", feature.properties.linke],
+        ["fdp", feature.properties.fdp],
+        ["misc", feature.properties.misc],
+    ]);
+    let winning_party = [...votes_map.entries()].reduce((a, e) => parseInt(e[1]) > parseInt(a[1]) ? e : a);
+    let color_map = new Map([
+        ["cdu", "#000000"],
+        ["spd", "#E3000F"],
+        ["gruene", "#46962B"],
+        ["afd", "#009EE0"],
+        ["linke", "#BE3075"],
+        ["fdp", "#FFFF00"],
+        ["misc", "#808080"],
+    ]);
+
+    //calculate percentages
+    let numOr0 = n => isNaN(n) ? 0 : n
+    let votes = [...votes_map.values()].map(val => parseInt(val));
+    let sum = votes.reduce((a,b) => numOr0(a) + numOr0(b), 0); //calculate total amount of votes, use 0 in calculation if summand is not a number
+    let percentages = votes.map(val => parseFloat((val / sum * 100).toFixed(2))); //calculate percentage and trim to 2 decimal places
+    let percentages_map = new Map([
+        ["cdu", percentages[0]],
+        ["spd", percentages[1]],
+        ["gruene", percentages[2]],
+        ["afd", percentages[3]],
+        ["linke", percentages[4]],
+        ["fdp", percentages[5]],
+        ["misc", percentages[6]],
+    ]);
+
+    //calculate opacity based on majority
+    function dynamicOpacity(percentage){
+        if(percentage >= 50){
+            return 1; //absolute majority --> full opacity
+        }
+        else{
+            return percentage * 2 / 100; // less than absolute --> maps 50% too 100% opacity and then lowers according to value
+        }
+    }
+
+    return {
+        fillColor: color_map.get(winning_party[0]),
+        weight: 1,
+        opacity: 1,
+        color: 'grey',
+        dashArray: '3',
+        fillOpacity: dynamicOpacity(percentages_map.get(winning_party[0]))
+    }
+}
+
+//style change on mouseover
+function hightlightOnMouseOver(e){
+    let layer = e.target;
+    layer.setStyle({
+        weight: 5,
+        color: 'white',
+        dashArray: '',
+    });
+
+    layer.bringToFront();
+
+    info.update(layer.feature.properties);
+}
+
+//style reset on mouseout
+function resetHighlight(e){
+    geoJson.resetStyle(e.target);
+    info.update(null);
+}
+
+//on click jump to the state
+function zoomToState(e) {
+    mapGermany.fitBounds(e.target.getBounds());
+}
+
+//assign listeners
+function onEachFeature(feature, layer){
+    layer.on({
+        mouseover: hightlightOnMouseOver,
+        mouseout: resetHighlight,
+        click: zoomToState
+    });
+}
+
+$(document).ready(function(){
+
+
+    $("[id^=election_select]").on('change', function () {
+        $("[id^=year_select]").html($("#year_select_1").find("option").filter('[election_type="' + this.value + '"]'));
+    }).trigger('change');
+
+    $("#sortable").sortable();
+    $("#sortable").disableSelection();
+
+    //set up the map
+    mapGermany = L.map("map_germany").setView([50.9, 10.3], 7);
+
+    //tile layer
+    L.tileLayer("https://b.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+
+    }).addTo(mapGermany);
+
+    buildboxChooses.push(wahlkreise);
+    //wahlkreise passed from the server on the first call to the site, needed to init this variable in the html file because of jinja
+    geoJson = L.geoJSON(wahlkreise, {
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(mapGermany);
+
+    info = L.control();
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info');
+        this.update();
+        return this._div;
+    };
+
+    // update info window with the data of the hovered state
+    info.update = function (properties) {
+        let percentages = [];
+        if(properties) {
+            let votes = [properties.union, properties.spd, properties.gruene, properties.afd, properties.linke, properties.fdp, properties.misc].map(val => parseInt(val)); //parse strings to int
+            let numOr0 = n => isNaN(n) ? 0 : n
+            let sum = votes.reduce((a,b) => numOr0(a) + numOr0(b), 0); //calculate total amount of votes, use 0 in calculation if summand is not a number
+            percentages = votes.map(val => (val / sum * 100).toFixed(2)); //calculate percentage and trim to 2 decimal places
+        }
+        this._div.innerHTML = '<h4>Wahlergebnisse</h4>' +  (properties ?
+            '<b>' + properties.WKR_NAME + ', ' + properties.LAND_NAME + '</b>' +
+            '<br /> CDU/CSU : ' +  percentages[0] + '%' +
+            '<br /> SPD : '  + percentages[1] + '%' +
+            '<br /> Grüne : '  + percentages[2] + '%' +
+            '<br /> AFD : '  + percentages[3] + '%' +
+            '<br /> LINKE : '  + percentages[4] + '%' +
+            '<br /> FDP : '  + percentages[5] + '%' +
+            '<br /> Sonstige : '  + percentages[6] + '%'
+            : 'Hover over a state');
+    };
+
+    info.addTo(mapGermany);
+
+    electionTypeSelector = L.control({position: 'bottomleft'});
+    electionTypeSelector.onAdd = function (map) {
+        let div = L.DomUtil.create('div', 'election selector');
+        div.innerHTML = '<select><option selected>Bundestagswahlen</option><option>Europawahlen</option><option>Landtagswahlen</option><option>Kommunalwahlen</option></select>';
+        div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
+        return div;
+    };
+    electionTypeSelector.addTo(mapGermany);
+
+    prevNext = L.control({position: "bottomright"});
+    prevNext.onAdd = function(map){
+        let div = L.DomUtil.create("div", "prevNext");
+        div.innerHTML = '<div class="btn btn-primary" onclick="renderPrev()">Previous</div><div class="btn btn-primary" onclick="renderNext()">Next</div>'
+        return div;
+    }
+    prevNext.addTo(mapGermany);
+
+    chosenInfo = L.control({position: "topleft"});
+    chosenInfo.onAdd = function(map){
+        this._div = L.DomUtil.create('div', 'info');
+        this.update();
+        return this._div;
+    }
+    chosenInfo.update = function(){
+        let election_type = "";
+        switch(buildboxChooses[currentIndex].parameters.election_type){
+            case "btw": {
+                election_type = "Bundestagswahl";
+                break;
+            }
+            case "ew": {
+                election_type = "Europawahl";
+                break;
+            }
+            case "ltw": {
+                election_type = "Landtagswahl";
+                break;
+            }
+            default: {
+                election_type = "Wahl";
+                break;
+            }
+        }
+        this._div.innerHTML = '<h4> currently rendered: </h4>' +
+            '<br />' + election_type + ' ' + buildboxChooses[currentIndex].parameters.election_year
+    }
+    chosenInfo.addTo(mapGermany);
+
+
+});
