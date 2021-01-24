@@ -11,7 +11,7 @@ OUTPUT_PATH = "F:/Repository/wcmpraktikum/Datasets/Combined/btw_2017.geojson"
 
 # Mode: btw, ew
 MODE = "btw"
-
+YEAR = OUTPUT_PATH.split("_")[1][0:4]
 
 with open(FILE_PATH_GEOJSON, encoding='utf-8') as f:
     gjson = geojson.load(f)
@@ -87,6 +87,7 @@ def main():
         new = {}
         new['type'] = gjson['type']
         new['crs'] = gjson['crs']
+        new["parameters"] = {"election_type": MODE, "election_year": YEAR}
         new['features'] = []
 
         for f in gjson['features']:
