@@ -2,8 +2,8 @@ import pandas as pd
 import json
 import re
 import numbers
-input = "ew04_kerg.csv"
-output = "ew04_results.json"
+input = "../Datasets/Wahlergebnisse/ew14_kerg.csv"
+output = "../Datasets/Wahlergebnisse/ew14_results.json"
 land_list = ["Schleswig-Holstein","Hamburg","Niedersachsen","Bremen","Nordrhein-Westfalen","Hessen","Rheinland-Pfalz","Baden-Württemberg",
             "Bayern","Saarland","Berlin","Brandenburg","Mecklenburg-Vorpommern","Sachsen","Sachsen-Anhalt","Thüringen","Bundesgebiet"]
 
@@ -14,9 +14,9 @@ indices_dict["ew19"] = [21,11,13,15,19,17,23]
 indices_dict["ew14"] = [21,11,13,15,51,19,17]
 indices_dict["ew09"] = [17,11,13,15,99999,19,21]
 indices_dict["ew04"] = [8,6,7,9,99999,10,11]
-year = input.split("_")[0]
+year = input.split("/")[-1][:4]
 
-enc = "utf-8" if year != "ew04" else "cp1252"
+enc = "utf-8" if year not in ["ew04", "ew09", "ew14"] else "cp1252"
 with open(input, mode = "r", encoding=enc, errors="ignore") as f:
     conv =  []
     for line in f:
