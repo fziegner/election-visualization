@@ -64,3 +64,14 @@ h4 {
 }
 
 #map_germany { height: 800px; }
+
+.close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 30px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+    outline: none !important;
+}

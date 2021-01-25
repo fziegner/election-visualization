@@ -4,19 +4,37 @@
 
 <div id="map_germany"></div>
 
- <div class="card-group" id="buildbox">
+ <div id="buildbox">
     <div class="row" id="sortable">
 
     </div>
  </div>
 
 <div class="btn btn-primary" id="btn_add_card" onclick="addCard();">Add Card</div>
-<div class="btn btn-primary" id="btn_save" onclick="saveAndRender();">Save and Render</div>
+<div class="btn btn-primary" id="btn_save" onclick="saveAndRender();" style="display: none">Save and Render</div>
+
+<div id="tutorial_modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Short tutorial</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p> drag & droppable cards, always hit save and render after changes</p>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <script id="addCard" type="text/html">
     {% raw %}  <!-- need to tell jinja to leave this untouched because the {{  }} in this section should be filled by mustache.js -->
-    <div class="card border-primary">
+    <div id="card_{{num}}" class="card mw-100 border-primary">
         <div class="card-body">
             <label for="election_select">Select Election Type:</label>
             <select class="custom-select" id="election_select_{{num}}" onchange="changeDrowdown(this)">
@@ -24,6 +42,7 @@
                 <option value="ew">Europawahl</option>
                 <option value="ltw">Landtagswahl</option>
             </select>
+            <button id="close_{{num}}" class="btn btn-light close" onclick="deleteCard(this)">&times;</button>
             <br/>
             <label for="year_select">Select Year</label>
             <select class="custom-select" id="year_select_{{num}}">
@@ -46,6 +65,8 @@
     </div>
     {% endraw %}
 </script>
+
+
 <script type="text/javascript">
 let wahlkreise = {{ wahlkreise|tojson }};
 </script>

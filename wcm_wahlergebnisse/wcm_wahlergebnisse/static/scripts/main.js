@@ -13,8 +13,23 @@ function addCard(){
         let highestNum = group.children().length;
         let newNum = highestNum + 1;
 
+        if (highestNum === 0){ //trigger the tutorial only on the first click to add render
+            $('#tutorial_modal').modal('toggle');
+        }
+
         group.append(Mustache.render(document.getElementById("addCard").innerHTML, {num: newNum}));
         $("#election_select_" + newNum).trigger("change");
+
+        $("#btn_save").show();
+}
+
+function deleteCard(card){
+    let id = parseInt(card.id.replace("close_", ""));
+    $("#card_" + id).remove();
+
+    if($("#sortable").children().length === 0){
+        $("#btn_save").hide();
+    }
 }
 
 function changeDrowdown(elem){
@@ -35,9 +50,10 @@ function saveAndRender(){
     buildboxChooses = [] //empty and refill
     let group = $("#sortable");
     let highestNum = group.children().length;
-    for(let i = 1; i <= highestNum; i++){
-        let type = $("#election_select_" + i).val();
-        let year = $("#year_select_" + i).val();
+    Array.from(group.children()).forEach(function(card){
+        let id = parseInt(card.id.replace("card_", ""));
+        let type = $("#election_select_" + id).val();
+        let year = $("#year_select_" + id).val();
 
         $.ajax({
             method: "get",
@@ -52,7 +68,7 @@ function saveAndRender(){
                 console.log(error);
             }
         });
-    }
+    });
 
     currentIndex = 0;
     geoJson.removeFrom(mapGermany); //remove old geoJson
@@ -61,7 +77,6 @@ function saveAndRender(){
         onEachFeature: onEachFeature
     }).addTo(mapGermany);
 
-    //this line is never reached, type error before, but it happens on line 270ish with the election info box (buildboxChooses[currentIndex] undefined)
     chosenInfo.update();
 }
 
@@ -86,11 +101,13 @@ function renderPrev(){
     let group = $("#sortable");
     let highestNum = group.children().length;
 
-    if(currentIndex == 0){ //need this case separately because otherwise modulo would get negative
+    if(highestNum !== 0){
+        if(currentIndex === 0){ //need this case separately because otherwise modulo would get negative
         currentIndex = highestNum - 1;
-    }
-    else {
+        }
+        else {
         currentIndex = (currentIndex - 1) % highestNum; //if we had the last and click next we want to start with the first one again
+        }
     }
 
     geoJson.removeFrom(mapGermany); //remove old geoJson
@@ -106,7 +123,9 @@ function renderNext(){
     let group = $("#sortable");
     let highestNum = group.children().length;
 
-    currentIndex = (currentIndex + 1) % highestNum; //if we had the last and click next we want to start with the first one again
+    if(highestNum !== 0) {
+        currentIndex = (currentIndex + 1) % highestNum; //if we had the last and click next we want to start with the first one again
+    }
 
     geoJson.removeFrom(mapGermany); //remove old geoJson
     geoJson = L.geoJSON(buildboxChooses[currentIndex], {  //render the next item from the buildbox
@@ -229,6 +248,7 @@ $(document).ready(function(){
     }).addTo(mapGermany);
 
     buildboxChooses.push(wahlkreise);
+    currentIndex = 0;
     //wahlkreise passed from the server on the first call to the site, needed to init this variable in the html file because of jinja
     geoJson = L.geoJSON(wahlkreise, {
         style: style,
