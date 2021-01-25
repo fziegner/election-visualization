@@ -237,7 +237,7 @@ $(document).ready(function(){
 
     info = L.control();
     info.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'info');
+        this._div = L.DomUtil.create('div', 'info_right');
         this.update();
         return this._div;
     };
@@ -251,15 +251,18 @@ $(document).ready(function(){
             let sum = votes.reduce((a,b) => numOr0(a) + numOr0(b), 0); //calculate total amount of votes, use 0 in calculation if summand is not a number
             percentages = votes.map(val => (val / sum * 100).toFixed(2)); //calculate percentage and trim to 2 decimal places
         }
-        this._div.innerHTML = '<h4>Wahlergebnisse</h4>' +  (properties ?
+        this._div.innerHTML = '<h4>Wahlergebnisse</h4>' +
+            (properties ?
             '<b>' + properties.WKR_NAME + ', ' + properties.LAND_NAME + '</b>' +
-            '<br /> CDU/CSU : ' +  percentages[0] + '%' +
-            '<br /> SPD : '  + percentages[1] + '%' +
-            '<br /> Grüne : '  + percentages[2] + '%' +
-            '<br /> AFD : '  + percentages[3] + '%' +
-            '<br /> LINKE : '  + percentages[4] + '%' +
-            '<br /> FDP : '  + percentages[5] + '%' +
-            '<br /> Sonstige : '  + percentages[6] + '%'
+            '<table class="faction_table">' +
+            '       <tr><td><div class="faction_square cdu"/></td><td>CDU/CSU : </td><td>' + percentages[0] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square spd"/></td><td>SPD : </td><td>' + percentages[1] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square gruene"/></td><td>GRÜNE : </td><td>' + percentages[2] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square afd"/></td><td>AFD : </td><td>' + percentages[3] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square linke"/></td><td>LINKE : </td><td>' + percentages[4] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square fdp"/></td><td>FDP : </td><td>' + percentages[5] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square misc"/></td><td>Sonstige : </td><td>' + percentages[6] + '%' + '</td></tr>' +
+            '</table>'
             : 'Hover over a state');
     };
 
@@ -284,7 +287,7 @@ $(document).ready(function(){
 
     chosenInfo = L.control({position: "topleft"});
     chosenInfo.onAdd = function(map){
-        this._div = L.DomUtil.create('div', 'info');
+        this._div = L.DomUtil.create('div', 'info_left');
         this.update();
         return this._div;
     }
@@ -309,7 +312,7 @@ $(document).ready(function(){
             }
         }
         this._div.innerHTML = '<h4> currently rendered: </h4>' +
-            '<br />' + election_type + ' ' + buildboxChooses[currentIndex].parameters.election_year
+            election_type + ' ' + buildboxChooses[currentIndex].parameters.election_year
     }
     chosenInfo.addTo(mapGermany);
 

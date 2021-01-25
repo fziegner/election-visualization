@@ -1,4 +1,4 @@
-.info {
+.info_left {
     padding: 6px 8px;
     font: 14px/16px Arial, Helvetica, sans-serif;
     background: white;
@@ -6,9 +6,61 @@
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
 }
-.info h4 {
+
+.info_right {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    text-align: right;
+}
+
+h4 {
     margin: 0 0 5px;
     color: #777;
+}
+
+.faction_table {
+    margin-right: 0px;
+    margin-left: auto;
+}
+
+.faction_square {
+    width: 10px;
+    height: 10px;
+    margin-right: 3px;
+    margin-left: auto;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.cdu {
+    background: #000000;
+}
+
+.spd {
+    background: #E3000F;
+}
+
+.afd {
+    background: #009EE0;
+}
+
+.gruene {
+    background: #46962B;
+}
+
+.linke {
+    background: #BE3075;
+}
+
+.fdp {
+    background: #FFFF00;
+}
+
+.misc {
+    background: #808080;
 }
 
 #map_germany { height: 800px; }
