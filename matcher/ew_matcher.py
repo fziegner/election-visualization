@@ -5,10 +5,10 @@ from difflib import SequenceMatcher
 
 from Levenshtein import distance
 
-FILE_PATH_GEOJSON = "landkreise_simplify20_2009.geojson"
-FILE_PATH_RESULTS = "../Datasets/Wahlergebnisse/ew09_results.json"
+FILE_PATH_GEOJSON = "../Datasets/Wahlkreise_geojson/EW2014GeometrieWahlkreise.geojson"
+FILE_PATH_RESULTS = "../Datasets/Wahlergebnisse/ew14_results.json"
 
-OUTPUT_PATH = "../Datasets/Combined/ew_2009.geojson"
+OUTPUT_PATH = "../Datasets/Combined/ew_2014.geojson"
 
 MODE = OUTPUT_PATH.split("/")[-1].split("_")[0]
 YEAR = int(OUTPUT_PATH.split("_")[1][:4])
@@ -98,7 +98,8 @@ def main():
 
                     gj_feature['properties']['WKR_NAME'] = r['WKR_NAME']
                     gj_feature['properties']['LAND_NAME'] = land_dict[id_[0:2]]
-                    gj_feature['properties']['eligible_voters'] = r['total_votes'] # !!! I changed eligible_voters to total_votes in the parser of the EW files !!!
+                    gj_feature['properties']['eligible_voters'] = r['eligible_voters']
+                    gj_feature['properties']['total_votes'] = r['total_votes']
                     gj_feature['properties']['union'] = r['union']
                     gj_feature['properties']['spd'] = r['spd']
                     gj_feature['properties']['gruene'] = r['gruene']
@@ -133,7 +134,8 @@ def main():
 
                 gj_feature['properties']['WKR_NAME'] = save['WKR_NAME']
                 gj_feature['properties']['LAND_NAME'] = wkr["properties"]["NAME_1"]
-                gj_feature['properties']['eligible_voters'] = save['total_votes']  # !!! I changed eligible_voters to total_votes in the parser of the EW files !!!
+                gj_feature['properties']['eligible_voters'] = save['eligible_voters']
+                gj_feature['properties']['total_votes'] = save['total_votes']
                 gj_feature['properties']['union'] = save['union']
                 gj_feature['properties']['spd'] = save['spd']
                 gj_feature['properties']['gruene'] = save['gruene']
