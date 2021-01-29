@@ -13,8 +13,23 @@ function addCard(){
         let highestNum = group.children().length;
         let newNum = highestNum + 1;
 
+        if (highestNum === 0){ //trigger the tutorial only on the first click to add render
+            $('#tutorial_modal').modal('toggle');
+        }
+
         group.append(Mustache.render(document.getElementById("addCard").innerHTML, {num: newNum}));
         $("#election_select_" + newNum).trigger("change");
+
+        $("#btn_save").show();
+}
+
+function deleteCard(card){
+    let id = parseInt(card.id.replace("close_", ""));
+    $("#card_" + id).remove();
+
+    if($("#sortable").children().length === 0){
+        $("#btn_save").hide();
+    }
 }
 
 function changeDrowdown(elem){
@@ -35,9 +50,10 @@ function saveAndRender(){
     buildboxChooses = [] //empty and refill
     let group = $("#sortable");
     let highestNum = group.children().length;
-    for(let i = 1; i <= highestNum; i++){
-        let type = $("#election_select_" + i).val();
-        let year = $("#year_select_" + i).val();
+    Array.from(group.children()).forEach(function(card){
+        let id = parseInt(card.id.replace("card_", ""));
+        let type = $("#election_select_" + id).val();
+        let year = $("#year_select_" + id).val();
 
         $.ajax({
             method: "get",
@@ -52,7 +68,7 @@ function saveAndRender(){
                 console.log(error);
             }
         });
-    }
+    });
 
     currentIndex = 0;
     geoJson.removeFrom(mapGermany); //remove old geoJson
@@ -61,7 +77,6 @@ function saveAndRender(){
         onEachFeature: onEachFeature
     }).addTo(mapGermany);
 
-    //this line is never reached, type error before, but it happens on line 270ish with the election info box (buildboxChooses[currentIndex] undefined)
     chosenInfo.update();
 }
 
@@ -86,11 +101,13 @@ function renderPrev(){
     let group = $("#sortable");
     let highestNum = group.children().length;
 
-    if(currentIndex == 0){ //need this case separately because otherwise modulo would get negative
+    if(highestNum !== 0){
+        if(currentIndex === 0){ //need this case separately because otherwise modulo would get negative
         currentIndex = highestNum - 1;
-    }
-    else {
+        }
+        else {
         currentIndex = (currentIndex - 1) % highestNum; //if we had the last and click next we want to start with the first one again
+        }
     }
 
     geoJson.removeFrom(mapGermany); //remove old geoJson
@@ -106,7 +123,9 @@ function renderNext(){
     let group = $("#sortable");
     let highestNum = group.children().length;
 
-    currentIndex = (currentIndex + 1) % highestNum; //if we had the last and click next we want to start with the first one again
+    if(highestNum !== 0) {
+        currentIndex = (currentIndex + 1) % highestNum; //if we had the last and click next we want to start with the first one again
+    }
 
     geoJson.removeFrom(mapGermany); //remove old geoJson
     geoJson = L.geoJSON(buildboxChooses[currentIndex], {  //render the next item from the buildbox
@@ -229,6 +248,7 @@ $(document).ready(function(){
     }).addTo(mapGermany);
 
     buildboxChooses.push(wahlkreise);
+    currentIndex = 0;
     //wahlkreise passed from the server on the first call to the site, needed to init this variable in the html file because of jinja
     geoJson = L.geoJSON(wahlkreise, {
         style: style,
@@ -237,7 +257,7 @@ $(document).ready(function(){
 
     info = L.control();
     info.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'info');
+        this._div = L.DomUtil.create('div', 'info_right');
         this.update();
         return this._div;
     };
@@ -251,15 +271,18 @@ $(document).ready(function(){
             let sum = votes.reduce((a,b) => numOr0(a) + numOr0(b), 0); //calculate total amount of votes, use 0 in calculation if summand is not a number
             percentages = votes.map(val => (val / sum * 100).toFixed(2)); //calculate percentage and trim to 2 decimal places
         }
-        this._div.innerHTML = '<h4>Wahlergebnisse</h4>' +  (properties ?
+        this._div.innerHTML = '<h4>Wahlergebnisse</h4>' +
+            (properties ?
             '<b>' + properties.WKR_NAME + ', ' + properties.LAND_NAME + '</b>' +
-            '<br /> CDU/CSU : ' +  percentages[0] + '%' +
-            '<br /> SPD : '  + percentages[1] + '%' +
-            '<br /> Grüne : '  + percentages[2] + '%' +
-            '<br /> AFD : '  + percentages[3] + '%' +
-            '<br /> LINKE : '  + percentages[4] + '%' +
-            '<br /> FDP : '  + percentages[5] + '%' +
-            '<br /> Sonstige : '  + percentages[6] + '%'
+            '<table class="faction_table">' +
+            '       <tr><td><div class="faction_square cdu"/></td><td>CDU/CSU : </td><td>' + percentages[0] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square spd"/></td><td>SPD : </td><td>' + percentages[1] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square gruene"/></td><td>GRÜNE : </td><td>' + percentages[2] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square afd"/></td><td>AFD : </td><td>' + percentages[3] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square linke"/></td><td>LINKE : </td><td>' + percentages[4] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square fdp"/></td><td>FDP : </td><td>' + percentages[5] + '%' + '</td></tr>' +
+            '       <tr><td><div class="faction_square misc"/></td><td>Sonstige : </td><td>' + percentages[6] + '%' + '</td></tr>' +
+            '</table>'
             : 'Hover over a state');
     };
 
@@ -284,7 +307,7 @@ $(document).ready(function(){
 
     chosenInfo = L.control({position: "topleft"});
     chosenInfo.onAdd = function(map){
-        this._div = L.DomUtil.create('div', 'info');
+        this._div = L.DomUtil.create('div', 'info_left');
         this.update();
         return this._div;
     }
@@ -309,7 +332,7 @@ $(document).ready(function(){
             }
         }
         this._div.innerHTML = '<h4> currently rendered: </h4>' +
-            '<br />' + election_type + ' ' + buildboxChooses[currentIndex].parameters.election_year
+            election_type + ' ' + buildboxChooses[currentIndex].parameters.election_year
     }
     chosenInfo.addTo(mapGermany);
 
