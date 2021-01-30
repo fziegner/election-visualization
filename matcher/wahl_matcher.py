@@ -1,13 +1,12 @@
-import os
 import json
-import geojson
 
+import geojson
 from Levenshtein import distance
 
-FILE_PATH_GEOJSON = 'F:/Repository/wcmpraktikum/Datasets/Wahlkreise_geojson/2017GeometrieWahlkreise19DBT5.geojson'
-FILE_PATH_RESULTS = "F:/Repository/wcmpraktikum/Datasets/Wahlergebnisse/btw17_results.json"
+FILE_PATH_GEOJSON = '../Datasets/Wahlkreise_geojson/BTW2017GeometrieWahlkreise.geojson'
+FILE_PATH_RESULTS = "../Datasets/Wahlergebnisse/btw17_results.json"
 
-OUTPUT_PATH = "F:/Repository/wcmpraktikum/Datasets/Combined/btw_2017.geojson"
+OUTPUT_PATH = "../Datasets/Combined/btw_2017.geojson"
 
 # Mode: btw, ew
 MODE = "btw"
@@ -103,9 +102,10 @@ def main():
                 feature['geometry'] = f['geometry']
 
                 feature['properties']['eligible_voters'] = wkr['eligible_voters']
+                feature['properties']['total_votes'] = wkr['total_votes']
                 feature['properties']['union'] = wkr['union']
                 feature['properties']['spd'] = wkr['spd']
-                feature['properties']['grune'] = wkr['gruene']
+                feature['properties']['gruene'] = wkr['gruene']
                 feature['properties']['afd'] = wkr['afd']
                 feature['properties']['linke'] = wkr['linke']
                 feature['properties']['fdp'] = wkr['fdp']
