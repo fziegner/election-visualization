@@ -3,16 +3,16 @@ import re
 
 import pandas as pd
 
-input_csv = "../Datasets/Wahlergebnisse/ew14_kerg.csv"
-output_json = "../Datasets/Wahlergebnisse/ew14_results.json"
+input_csv = "../Datasets/Wahlergebnisse/ew19_kerg.csv"
+output_json = "../Datasets/Wahlergebnisse/ew19_results.json"
 land_list = ["Schleswig-Holstein", "Hamburg", "Niedersachsen", "Bremen", "Nordrhein-Westfalen", "Hessen",
              "Rheinland-Pfalz", "Baden-Württemberg", "Bayern", "Saarland", "Berlin", "Brandenburg",
              "Mecklenburg-Vorpommern", "Sachsen", "Sachsen-Anhalt", "Thüringen", "Bundesgebiet"]
 
-
 # Indices = CSU, CDU, SPD, Gruene, AfD, Linke, FDP
 indices_dict = {"ew19": [21, 11, 13, 15, 19, 17, 23], "ew14": [21, 11, 13, 15, 51, 19, 17],
                 "ew09": [17, 11, 13, 15, 99999, 19, 21], "ew04": [8, 6, 7, 9, 99999, 10, 11]}
+
 year = input_csv.split("/")[-1].split("_")[0]
 
 enc = "utf-8" if year != "ew04" else "cp1252"
@@ -27,9 +27,9 @@ with open(input_csv, mode="r", encoding=enc, errors="ignore") as f:
 
 df = pd.DataFrame(conv)
 
-with open(output_json, mode='w', encoding="utf-8") as feedsjson:
+with open(output_json, mode='w', encoding="utf-8") as f:
     content = []
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         not_misc = []
         for ind in indices_dict[year]:
             try:
@@ -42,7 +42,7 @@ with open(output_json, mode='w', encoding="utf-8") as feedsjson:
                  "WKR_NAME": row[1],
                  "eligible_voters": row[3] if year != "ew04" else row[2],
                  "total_votes": row[9] if year != "ew04" else row[5],
-                 "union": str(not_misc[0]) if row[2] == "9" else str(not_misc[1]) if year != "ew04" else str(not_misc[0]) if row[0].startswith("09") else str(not_misc[1]),
+                 "union": str(not_misc[0]) if row[2] in ["9", "09"] else str(not_misc[1]) if year != "ew04" else str(not_misc[0]) if row[0].startswith("09") else str(not_misc[1]),
                  "spd": str(not_misc[2]),
                  "gruene": str(not_misc[3]),
                  "afd": str(not_misc[4]),
@@ -51,4 +51,4 @@ with open(output_json, mode='w', encoding="utf-8") as feedsjson:
                  "misc": str(misc)}
         content.append(entry)
 
-    json.dump(content, feedsjson)
+    json.dump(content, f)
