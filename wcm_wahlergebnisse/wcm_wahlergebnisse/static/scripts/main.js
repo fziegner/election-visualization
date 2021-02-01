@@ -14,10 +14,6 @@ function addCard(){
         let highestNum = group.children().length;
         let newNum = highestNum + 1;
 
-        if (highestNum === 0){ //trigger the tutorial only on the first click to add render
-            $('#tutorial_modal').modal('toggle');
-        }
-
         group.append(Mustache.render(document.getElementById("addCard").innerHTML, {num: newNum}));
         $("#election_select_" + newNum).trigger("change");
 

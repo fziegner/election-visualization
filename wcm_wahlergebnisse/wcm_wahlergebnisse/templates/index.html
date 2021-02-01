@@ -1,33 +1,28 @@
 {% extends "layout.html" %}
 
 {% block content %}
-
-<div id="map_germany"></div>
-
- <div id="buildbox">
-    <div class="row" id="sortable">
-
+<div class="row">
+    <div class="col-2">
+        <h5>Tutorial</h5>
+        <ul>
+            <li>control data using the buildbox on the left, it appears once you click add Card the first time</li>
+            <li>Cards there are drag & droppable, meanining you can rearrange the order</li>
+            <li>always hit "save and render" for your changes to take effect</li>
+            <li>jump through your different data sets using the "prev" and "next" buttons on the map</li>
+            <li>using "show immediate", you can directly jump to the desired dataset</li>
+            <li>triggering the voters mode in the bottom left lets you see an election turnout map. opacity is based on the voters turnout.</li>
+            <li>in regular election mode, your map will display in the colors of the fraction with the most relative votes on each election district. opacity is based on the votes (absolute majority gets opacity 1, then calculated downwards)</li>
+        </ul>
     </div>
- </div>
-
-<div class="btn btn-primary" id="btn_add_card" onclick="addCard();">Add Card</div>
-<div class="btn btn-primary" id="btn_save" onclick="saveAndRender();" style="display: none">Save and Render</div>
-
-<div id="tutorial_modal" class="modal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Short tutorial</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p> drag & droppable cards, always hit save and render after changes</p>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
+    <div class="col-8">
+        <div id="map_germany"></div>
+    </div>
+    <div class="col-2">
+         <div id="buildbox">
+            <div class="row" id="sortable"></div>
+         </div>
+        <div class="btn btn-primary" id="btn_add_card" onclick="addCard();">Add Card</div>
+        <div class="btn btn-primary" id="btn_save" onclick="saveAndRender();" style="display: none">Save and Render</div>
     </div>
 </div>
 
