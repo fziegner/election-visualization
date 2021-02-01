@@ -2,8 +2,9 @@ let mapGermany;  // the leaflet map
 let geoJson; //the currently rendered geoJson
 let info;   //control widget that shows the data in detail
 let chosenInfo; // control widget that shows which element from the buildbox is currently rendered on the map
-let electionTypeSelector; //probably obsolete because we choose the election type with the build box
 let prevNext; //control box to navigate through the buildbox on the map
+let voters_mode = false;
+let voters_mode_trigger_button;
 
 let buildboxChooses = []; //array holding all geojsons that are currently selected from the buildbox
 let currentIndex = 0; //the index of the array above that is currently rendered on the map
@@ -136,61 +137,86 @@ function renderNext(){
     chosenInfo.update();
 }
 
+function toggleVotersMode(){
+    voters_mode = !voters_mode;
+    geoJson.resetStyle();
+
+    if(voters_mode){
+        $("#voters_mode_trigger_btn").html("Election Mode");
+    }
+    else{
+        $("#voters_mode_trigger_btn").html("Voters Mode")
+    }
+}
+
 // custom style of each feature (i.e. each wahlkreis)
 function style(feature) {
 
-    let votes_map = new Map([
-        ["cdu", feature.properties.union],
-        ["spd", feature.properties.spd],
-        ["gruene", feature.properties.gruene],
-        ["afd", feature.properties.afd],
-        ["linke", feature.properties.linke],
-        ["fdp", feature.properties.fdp],
-        ["misc", feature.properties.misc],
-    ]);
-    let winning_party = [...votes_map.entries()].reduce((a, e) => parseInt(e[1]) > parseInt(a[1]) ? e : a);
-    let color_map = new Map([
-        ["cdu", "#000000"],
-        ["spd", "#E3000F"],
-        ["gruene", "#46962B"],
-        ["afd", "#009EE0"],
-        ["linke", "#BE3075"],
-        ["fdp", "#FFFF00"],
-        ["misc", "#808080"],
-    ]);
-
-    //calculate percentages
-    let numOr0 = n => isNaN(n) ? 0 : n
-    let votes = [...votes_map.values()].map(val => parseInt(val));
-    let sum = votes.reduce((a,b) => numOr0(a) + numOr0(b), 0); //calculate total amount of votes, use 0 in calculation if summand is not a number
-    let percentages = votes.map(val => parseFloat((val / sum * 100).toFixed(2))); //calculate percentage and trim to 2 decimal places
-    let percentages_map = new Map([
-        ["cdu", percentages[0]],
-        ["spd", percentages[1]],
-        ["gruene", percentages[2]],
-        ["afd", percentages[3]],
-        ["linke", percentages[4]],
-        ["fdp", percentages[5]],
-        ["misc", percentages[6]],
-    ]);
-
-    //calculate opacity based on majority
-    function dynamicOpacity(percentage){
-        if(percentage >= 50){
-            return 1; //absolute majority --> full opacity
+    if(voters_mode){
+        return {
+            fillColor: "#000000",
+            weight: 1,
+            opacity: 1,
+            color: 'grey',
+            dashArray: '3',
+            fillOpacity: parseFloat(feature.properties.total_votes) / parseFloat(feature.properties.eligible_voters)
         }
-        else{
-            return percentage * 2 / 100; // less than absolute --> maps 50% too 100% opacity and then lowers according to value
-        }
+
     }
+    else{
+        let votes_map = new Map([
+            ["cdu", feature.properties.union],
+            ["spd", feature.properties.spd],
+            ["gruene", feature.properties.gruene],
+            ["afd", feature.properties.afd],
+            ["linke", feature.properties.linke],
+            ["fdp", feature.properties.fdp],
+            ["misc", feature.properties.misc],
+        ]);
+        let winning_party = [...votes_map.entries()].reduce((a, e) => parseInt(e[1]) > parseInt(a[1]) ? e : a);
+        let color_map = new Map([
+            ["cdu", "#000000"],
+            ["spd", "#E3000F"],
+            ["gruene", "#46962B"],
+            ["afd", "#009EE0"],
+            ["linke", "#BE3075"],
+            ["fdp", "#FFFF00"],
+            ["misc", "#808080"],
+        ]);
 
-    return {
-        fillColor: color_map.get(winning_party[0]),
-        weight: 1,
-        opacity: 1,
-        color: 'grey',
-        dashArray: '3',
-        fillOpacity: dynamicOpacity(percentages_map.get(winning_party[0]))
+        //calculate percentages
+        let numOr0 = n => isNaN(n) ? 0 : n
+        let votes = [...votes_map.values()].map(val => parseInt(val));
+        let sum = votes.reduce((a,b) => numOr0(a) + numOr0(b), 0); //calculate total amount of votes, use 0 in calculation if summand is not a number
+        let percentages = votes.map(val => parseFloat((val / sum * 100).toFixed(2))); //calculate percentage and trim to 2 decimal places
+        let percentages_map = new Map([
+            ["cdu", percentages[0]],
+            ["spd", percentages[1]],
+            ["gruene", percentages[2]],
+            ["afd", percentages[3]],
+            ["linke", percentages[4]],
+            ["fdp", percentages[5]],
+            ["misc", percentages[6]],
+        ]);
+
+        //calculate opacity based on majority
+        function dynamicOpacity(percentage){
+            if(percentage >= 50){
+                return 1; //absolute majority --> full opacity
+            }
+            else{
+                return percentage * 2 / 100; // less than absolute --> maps 50% too 100% opacity and then lowers according to value
+            }
+        }
+
+        return {
+            fillColor: color_map.get(winning_party[0]),
+            weight: 1,
+            opacity: 1,
+            color: 'grey',
+            dashArray: '3',
+            fillOpacity: dynamicOpacity(percentages_map.get(winning_party[0]))
+        }
     }
 }
 
@@ -282,20 +308,21 @@ $(document).ready(function(){
             '       <tr><td><div class="faction_square linke"/></td><td>LINKE : </td><td>' + percentages[4] + '%' + '</td></tr>' +
             '       <tr><td><div class="faction_square fdp"/></td><td>FDP : </td><td>' + percentages[5] + '%' + '</td></tr>' +
             '       <tr><td><div class="faction_square misc"/></td><td>Sonstige : </td><td>' + percentages[6] + '%' + '</td></tr>' +
+            '       <tr><td></td><td>Wahlberechtigte : </td><td>' + properties.eligible_voters + '</td></tr>' +
+            '       <tr><td></td><td>abgegebene Stimmen : </td><td>' + properties.total_votes + '</td></tr>' +
             '</table>'
             : 'Hover over a state');
     };
 
     info.addTo(mapGermany);
 
-    electionTypeSelector = L.control({position: 'bottomleft'});
-    electionTypeSelector.onAdd = function (map) {
-        let div = L.DomUtil.create('div', 'election selector');
-        div.innerHTML = '<select><option selected>Bundestagswahlen</option><option>Europawahlen</option><option>Landtagswahlen</option><option>Kommunalwahlen</option></select>';
-        div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
+    voters_mode_trigger_button = L.control({position: "bottomleft"});
+    voters_mode_trigger_button.onAdd = function(map){
+        let div = L.DomUtil.create("div", "voters_mode_trigger");
+        div.innerHTML = '<div id="voters_mode_trigger_btn" class="btn btn-primary" onclick="toggleVotersMode()">Voters Mode</div>';
         return div;
-    };
-    electionTypeSelector.addTo(mapGermany);
+    }
+    voters_mode_trigger_button.addTo(mapGermany);
 
     prevNext = L.control({position: "bottomright"});
     prevNext.onAdd = function(map){
