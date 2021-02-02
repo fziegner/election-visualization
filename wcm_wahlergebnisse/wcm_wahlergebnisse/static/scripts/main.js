@@ -149,13 +149,23 @@ function toggleVotersMode(){
 function style(feature) {
 
     if(voters_mode){
+        function dynamic_opacity(feature){
+            let relative = parseFloat(feature.properties.total_votes) / parseFloat(feature.properties.eligible_voters);
+            if(relative < 0.5){
+                return 0.1
+            }
+            else{
+                return (relative * 2) - 1
+            }
+        }
+
         return {
             fillColor: "#000000",
             weight: 1,
             opacity: 1,
             color: 'grey',
             dashArray: '3',
-            fillOpacity: parseFloat(feature.properties.total_votes) / parseFloat(feature.properties.eligible_voters)
+            fillOpacity: dynamic_opacity(feature)
         }
 
     }
